@@ -77,11 +77,12 @@ class BaseGAN(GANComponent):
             raise ValidationException("gan.create already called. Cowardly refusing to create graph twice")
         self.created = True
 
-    def save(self, save_file):
+    def save(self, save_file, step=None):
         print("[hypergan] Saving network to ", save_file)
         os.makedirs(os.path.expanduser(os.path.dirname(save_file)), exist_ok=True)
         saver = tf.train.Saver()
-        saver.save(self.session, save_file)
+        saver.save(self.session, save_file, global_step=step)
+
 
     def load(self, save_file):
         save_file = os.path.expanduser(save_file)
