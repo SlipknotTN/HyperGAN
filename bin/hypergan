@@ -12,7 +12,9 @@ from hypergan.gans.alpha_gan import AlphaGAN
 
 class CommandParser:
     def common(self, parser):
-        parser.add_argument('directory', action='store', type=str, help='The location of your data.  Subdirectories are treated as different classes.  You must have at least 1 subdirectory.')
+        parser.add_argument('directory', action='store', type=str,
+                            help='The location of your data.  Subdirectories are treated as different classes.  '
+                                 'You must have at least 1 subdirectory.')
         self.common_flags(parser)
 
     def common_flags(self, parser):
@@ -21,6 +23,8 @@ class CommandParser:
         parser.add_argument('--config', '-c', action='store', default=None, type=str, help='The configuration file to load.')
         parser.add_argument('--device', '-d', type=str, default='/gpu:0', help='In the form "/gpu:0", "/cpu:0", etc.  Always use a GPU (or TPU) to train')
         parser.add_argument('--format', '-f', type=str, default='png', help='jpg or png')
+        parser.add_argument('--sample_format', type=str, default=None, required=False,
+                            help='jpg or png, format of the saved samples, default the same as the input images')
         parser.add_argument('--crop', dest='crop', action='store_true', help='If your images are perfectly sized you can skip cropping.')
         parser.add_argument('--resize', dest='resize', action='store_true', help='If your images are perfectly sized you can skip resize.')
         parser.add_argument('--align', dest='align', help='Align classes.  Takes a directory of data to align with.')
@@ -59,6 +63,11 @@ if args.size:
     size = [int(x) for x in args.size.split("x")] + [None, None, None]
 else:
     size = [None, None, None]
+
+# Set output samples format equal to input images if not provided
+if args.sample_format is None:
+    args.sample_format = args.format
+
 width = size[0] or 64
 height = size[1] or 64
 channels = size[2] or 3

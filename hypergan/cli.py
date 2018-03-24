@@ -97,7 +97,7 @@ class CLI:
         self.gan.step()
 
         if(self.steps % self.sample_every == 0):
-            sample_file="samples/%06d.png" % (self.samples)
+            sample_file = "samples/{:06d}.{:s}".format(self.samples, self.args.sample_format)
             self.create_path(sample_file)
             sample_list = self.sample(sample_file)
             if self.args.use_hc_io:
@@ -124,7 +124,7 @@ class CLI:
 
     def sample_forever(self):
         while True:
-            sample_file="samples/%06d.png" % (self.samples)
+            sample_file = "samples/{:06d}.{:s}".format(self.samples, self.args.sample_format)
             self.create_path(sample_file)
             self.sample(sample_file)
             self.samples += 1
