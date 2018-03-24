@@ -1,4 +1,5 @@
 import os
+import glob
 import hyperchamber as hc
 import tensorflow as tf
 from hypergan.gan_component import ValidationException
@@ -26,6 +27,7 @@ from hypergan.samplers.alphagan_random_walk_sampler import AlphaganRandomWalkSam
 from hypergan.losses.supervised_loss import SupervisedLoss
 from hypergan.multi_component import MultiComponent
 from time import sleep
+
 
 class CLI:
     def __init__(self, gan, args={}):
@@ -90,15 +92,14 @@ class CLI:
 
         return sample_list
 
-
     def validate(self):
-        if(self.sampler == None):
-            raise ValidationException("No sampler found by the name '"+self.sampler_name+"'")
+        if self.sampler is None:
+            raise ValidationException("No sampler found by the name '" + self.sampler_name + "'")
 
     def step(self):
         self.gan.step()
 
-        if(self.steps % self.sample_every == 0):
+        if self.steps % self.sample_every == 0:
             sample_file = "samples/{:06d}.{:s}".format(self.samples, self.args.sample_format)
             self.create_path(sample_file)
             sample_list = self.sample(sample_file)
@@ -108,7 +109,7 @@ class CLI:
 
             self.samples += 1
 
-        self.steps+=1
+        self.steps += 1
 
     def create_path(self, filename):
         return os.makedirs(os.path.expanduser(os.path.dirname(filename)), exist_ok=True)
@@ -133,16 +134,15 @@ class CLI:
             print("Sample", self.samples)
             sleep(0.2)
 
-
     def train(self, starting_step=0):
-        i=starting_step
-        if(self.args.ipython):
+        i = starting_step
+        if self.args.ipython:
             fd = sys.stdin.fileno()
             fl = fcntl.fcntl(fd, fcntl.F_GETFL)
             fcntl.fcntl(fd, fcntl.F_SETFL, fl | os.O_NONBLOCK)
 
-        while(i < self.total_steps or self.total_steps == -1):
-            i+=1
+        while i < self.total_steps or self.total_steps == -1:
+            i += 1
             start_time = time.time()
             self.step()
 
@@ -204,10 +204,18 @@ class CLI:
                 # Retrieve step from previous checkpoint (retrieved from checkpoint name)
                 try:
                     checkpoint_step = int(self.load_file[self.load_file.rfind("-")+1:])
+                    self.steps = checkpoint_step
                     print("Restarting from step " + str(checkpoint_step))
                 except Exception as e:
                     print("Impossible to retrieve step counter from checkpoint file " + self.load_file +
                           ", restaring from 0")
+                # Retrieve sample number analyzing file system (alternative use step as sampple name)
+                files = sorted(glob.glob("samples/*.*"), reverse=True)
+                if len(files) > 0:
+                    last_filename = os.path.basename(files[0])
+                    last_sample = int(last_filename[:last_filename.rfind(".")])
+                    self.samples = last_sample + 1
+                    print("Restarting from sample number " + str(self.samples))
                 print("Model loaded")
             tf.train.start_queue_runners(sess=self.gan.session)
             self.train(starting_step=checkpoint_step)
