@@ -25,6 +25,8 @@ class CommandParser:
         parser.add_argument('--format', '-f', type=str, default='png', help='jpg or png')
         parser.add_argument('--sample_format', type=str, default=None, required=False,
                             help='jpg or png, format of the saved samples, default the same as the input images')
+        parser.add_argument('--load_model', type=str, default=None, required=False,
+                            help='Optional checkpoint path to continue training')
         parser.add_argument('--crop', dest='crop', action='store_true', help='If your images are perfectly sized you can skip cropping.')
         parser.add_argument('--resize', dest='resize', action='store_true', help='If your images are perfectly sized you can skip resize.')
         parser.add_argument('--align', dest='align', help='Align classes.  Takes a directory of data to align with.')
@@ -35,7 +37,7 @@ class CommandParser:
         parser.add_argument('--save_samples', action='store_true', help='Saves samples to the local `samples` directory.')
         parser.add_argument('--sampler', type=str, default='static_batch', help='Select a sampler.  Some choices: static_batch, batch, grid, progressive')
         parser.add_argument('--ipython', type=bool, default=False, help='Enables iPython embedded mode.')
-        parser.add_argument('--steps', type=int, default=-1, help='Number of steps to train for.  -1 is unlimited (default)')
+        parser.add_argument('--steps', type=int, default=-1, help='Number of steps to train for. -1 is unlimited (default)')
         parser.add_argument('--noviewer', dest='viewer', action='store_false', help='Disables the display of samples in a window.')
         parser.add_argument('--autoencode', dest='autoencode', action='store', help='Disables the display of samples in a window.')
         parser.add_argument('--classloss', dest='classloss', action='store_true', help='Enable class loss.  You must have multiple subfolders, one for each class')

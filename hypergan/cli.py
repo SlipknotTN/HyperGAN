@@ -36,7 +36,7 @@ class CLI:
         args = hc.Config(args)
         self.args = args
 
-        crop =  self.args.crop
+        crop = self.args.crop
 
         self.config_name = self.args.config or 'default'
         self.method = args.method or 'test'
@@ -49,8 +49,10 @@ class CLI:
         if self.args.save_file:
             self.save_file = self.args.save_file
         else:
-            default_save_path = os.path.abspath("saves/"+self.config_name)
+            default_save_path = os.path.abspath("saves/" + self.config_name)
             self.save_file = default_save_path + "/model.ckpt"
+            # By default we try to load default checkpoint name in the same directory
+            self.load_file = self.save_file if self.args.load_model is None else self.args.load_model
             self.create_path(self.save_file)
 
         title = "[hypergan] " + self.config_name
@@ -132,8 +134,8 @@ class CLI:
             sleep(0.2)
 
 
-    def train(self):
-        i=0
+    def train(self, starting_step=0):
+        i=starting_step
         if(self.args.ipython):
             fd = sys.stdin.fileno()
             fl = fcntl.fcntl(fd, fcntl.F_GETFL)
@@ -144,10 +146,8 @@ class CLI:
             start_time = time.time()
             self.step()
 
-            if (self.args.save_every != None and
-                self.args.save_every != -1 and
-                self.args.save_every > 0 and
-                i % self.args.save_every == 0):
+            if (self.args.save_every is not None and self.args.save_every != -1 and self.args.save_every > 0 and
+                    i % self.args.save_every == 0):
                 print(" |= Saving network")
                 if self.args.overwrite_save:
                     self.gan.save(self.save_file)
@@ -193,20 +193,30 @@ class CLI:
         if self.method == 'train':
             self.gan.create()
             self.add_supervised_loss()
-            self.gan.session.run(tf.global_variables_initializer())
-
-            if not self.gan.load(self.save_file):
+            checkpoint_step = 0
+            if not self.gan.load(self.load_file):
+                if self.args.load_model:
+                    raise Exception("ERROR: You have pass load_model argument, "
+                                    "but it was not possible to reload the checkpoint, please check the path")
+                self.gan.session.run(tf.global_variables_initializer())
                 print("Initializing new model")
             else:
+                # Retrieve step from previous checkpoint (retrieved from checkpoint name)
+                try:
+                    checkpoint_step = int(self.load_file[self.load_file.rfind("-")+1:])
+                    print("Restarting from step " + str(checkpoint_step))
+                except Exception as e:
+                    print("Impossible to retrieve step counter from checkpoint file " + self.load_file +
+                          ", restaring from 0")
                 print("Model loaded")
             tf.train.start_queue_runners(sess=self.gan.session)
-            self.train()
+            self.train(starting_step=checkpoint_step)
             tf.reset_default_graph()
             self.gan.session.close()
         elif self.method == 'build':
             self.gan.create()
-            if not self.gan.load(self.save_file):
-                raise "Could not load model: "+ save_file
+            if not self.gan.load(self.load_file):
+                raise "Could not load model: " + self.save_file
             else:
                 print("Model loaded")
             self.build()
