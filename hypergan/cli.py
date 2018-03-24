@@ -100,7 +100,7 @@ class CLI:
         self.gan.step()
 
         if self.steps % self.sample_every == 0:
-            sample_file = "samples/{:06d}.{:s}".format(self.samples, self.args.sample_format)
+            sample_file = "samples/{:07d}.{:s}".format(self.steps, self.args.sample_format)
             self.create_path(sample_file)
             sample_list = self.sample(sample_file)
             if self.args.use_hc_io:
@@ -127,7 +127,7 @@ class CLI:
 
     def sample_forever(self):
         while True:
-            sample_file = "samples/{:06d}.{:s}".format(self.samples, self.args.sample_format)
+            sample_file = "samples/{:07d}.{:s}".format(self.samples, self.args.sample_format)
             self.create_path(sample_file)
             self.sample(sample_file)
             self.samples += 1
@@ -209,13 +209,7 @@ class CLI:
                 except Exception as e:
                     print("Impossible to retrieve step counter from checkpoint file " + self.load_file +
                           ", restaring from 0")
-                # Retrieve sample number analyzing file system (alternative use step as sampple name)
-                files = sorted(glob.glob("samples/*.*"), reverse=True)
-                if len(files) > 0:
-                    last_filename = os.path.basename(files[0])
-                    last_sample = int(last_filename[:last_filename.rfind(".")])
-                    self.samples = last_sample + 1
-                    print("Restarting from sample number " + str(self.samples))
+                # We use sample step as sample name
                 print("Model loaded")
             tf.train.start_queue_runners(sess=self.gan.session)
             self.train(starting_step=checkpoint_step)
