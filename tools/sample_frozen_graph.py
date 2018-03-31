@@ -20,7 +20,9 @@ def doParsing():
 
 
 def main():
-
+    """
+    Run the script from repository root directory
+    """
     args = doParsing()
     print(args)
 
@@ -48,7 +50,7 @@ def main():
         # Squeeze first dimension to have 3D numpy array with clip to -1 and 1 in case of strange predictions
         for index, image in enumerate(splittedImages):
             filePath = args.outputImagePath + "_" + str(index+1) + ".jpg"
-            image = np.clip(np.squeeze(imageRGB, axis=0), a_min=-1.0, a_max=1.0)
+            image = np.clip(np.squeeze(image, axis=0), a_min=-1.0, a_max=1.0)
             # No normalization, only scaling to [0, 255]
             image += 1.0
             image *= 255.0/2.0

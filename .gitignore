@@ -3,3 +3,5 @@ samples/*
 .idea
 build/*
 dist/*
+export
+hypergan.egg-info
