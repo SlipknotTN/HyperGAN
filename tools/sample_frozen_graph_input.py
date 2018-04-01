@@ -42,7 +42,7 @@ def main():
         outputTensor = sess.graph.get_tensor_by_name("Tanh" + ":0")
 
         # Forced all zeros
-        # inputValues = np.zeros(shape=(32, 100), dtype=np.float32)
+        #inputValues = np.zeros(shape=inputTensor.shape, dtype=np.float32)
         # Random from -1.0 to 1.0
         inputValues = np.random.random_sample(inputTensor.shape) * 2.0 - 1.0
         generatedBatch = sess.run(outputTensor, feed_dict={inputTensor: inputValues})
